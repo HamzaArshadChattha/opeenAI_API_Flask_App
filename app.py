@@ -22,7 +22,6 @@ def create_prompt():
     data = request.get_json()  # Extract the JSON data from the request
     text = data.get('text')    # Get the 'text' field from the JSON data
     # Do something with the submitted text (e.g., save it to a database)
-    # Replace the following line with your desired processing logic
     prompt = chatgpt_api.create_prompt(text)
     if prompt:
         result = {
@@ -38,9 +37,11 @@ def create_prompt():
 
 @app.route('/delete-prompt/<item_id>', methods=['DELETE'])
 def delete_prompt(item_id):
-    # Your code to delete the item with the given ID
-    # Example: Delete item with ID from a database
-    # return some response
+    """
+    code to delete the item with the given ID
+    Example: Delete item with ID from a database
+    return some response
+    """
     try:
         prompt_index = int(item_id)
         if chatgpt_api.delete_prompt(prompt_index):
@@ -50,9 +51,11 @@ def delete_prompt(item_id):
 
 @app.route('/update-prompt/<item_id>', methods=['PUT'])
 def update_prompt(item_id):
-    # Your code to delete the item with the given ID
-    # Example: Delete item with ID from a database
-    # return some response
+    """
+    code to update the item with the given ID
+    Example: Delete item with ID from a database
+    return some response
+    """
     try:
         prompt_index = int(item_id)
         data = request.get_json()
@@ -65,9 +68,12 @@ def update_prompt(item_id):
 
 @app.route('/generate-response/<item_id>', methods=['GET'])
 def generate_response(item_id):
-    # Your code to delete the item with the given ID
-    # Example: Delete item with ID from a database
-    # return some response
+    """
+    code to generate the response for a prompt with the given ID
+    Example: Delete item with ID from a database
+    return some response
+    """
+
     try:
         prompt_index = int(item_id)
         
