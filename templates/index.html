@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OPENAI CHATBOT</title>
+</head>
+<body>
+    <h1>Create prompt</h1>
+    <form id="textForm">
+        <label for="textInput">Enter your prompt:</label>
+        <input type="text" id="textInput" name="text" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function onPageLoad() {
+            console.log('displaying results')
+            messages = {{ data | tojson | safe }};
+            for(i = 0; i < messages.prompts.length; i++) {
+                let res = {};
+                res['result'] = {};
+                res['result']['id'] = i;
+                res['result']['prompt'] = messages.prompts[i]['prompt'];
+                display_result(res);
+            }
+        }
+        window.onload = onPageLoad;
+
+        // JavaScript to handle form submission via AJAX
+        document.getElementById('textForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            let formData = new FormData(event.target); // Get the form data
+            let jsonData = {}; // Convert form data to JSON format
+            formData.forEach((value, key) => jsonData[key] = value);
+
+            // Make the POST request to the Flask API
+            fetch('/create-prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(jsonData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the response from the server
+                display_result(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        function display_result(data) {
+            let resultDiv = document.getElementById('result');
+
+            let newPrompt = document.createElement('div');
+            let responseDiv = document.createElement('div');
+            
+            // Delete operation 
+            let deleteButton = document.createElement('button');
+            deleteButton.textContent = "Delete prompt";
+            deleteButton.addEventListener('click', deletePrompt);
+            
+            // Update operation
+            let updateButton = document.createElement('button');
+            let updateInput = document.createElement('input');
+            
+            updateButton.addEventListener('click', UpdatePrompt);
+            updateButton.textContent = "Update prompt";
+
+            updateInput.value = data.result.prompt;
+
+            // Generate Response operation
+            let generateResponseButton = document.createElement('button');
+            generateResponseButton.addEventListener('click', GenerateResponse);
+            generateResponseButton.textContent = "Generate Response";
+
+            if (data.result.hasOwnProperty('id')) {
+                newPrompt.setAttribute('id', 'message-' + data.result.id);
+                updateInput.setAttribute('id', 'update-' + data.result.id);
+                responseDiv.setAttribute('id', 'response-'+ data.result.id);
+            }
+
+            responseDiv.innerText = JSON.stringify(data, null, 2);
+
+            newPrompt.appendChild(responseDiv);
+            newPrompt.appendChild(deleteButton);
+            newPrompt.appendChild(updateInput);
+            newPrompt.appendChild(updateButton);
+            newPrompt.appendChild(generateResponseButton);
+
+
+            resultDiv.appendChild(newPrompt);
+        }
+
+        function deletePrompt(event) {
+            parentNode = event.target.parentNode
+            let messageID = parentNode.id;
+            const index = messageID.indexOf('-');
+            const itemID = messageID.substring(index + 1).split('')[0];
+            let url = '/delete-prompt/' + parseInt(itemID);
+            fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // You can handle the response here
+                alert(data.message); // Display the response message in an alert
+                parentNode.remove(event.target);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function UpdatePrompt(event) {
+            parentNode = event.target.parentNode;
+            let messageID = parentNode.id;
+            const index = messageID.indexOf('-');
+            const itemID = messageID.substring(index + 1).split('')[0];
+            updateInput = document.getElementById('update-'+itemID).value;
+
+            let updatedResponseDiv = document.getElementById('response-'+itemID)
+            
+            jsonData = {}
+            jsonData['text'] = updateInput;
+
+            let url = '/update-prompt/' + itemID;
+            fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(jsonData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // You can handle the response here
+                updatedResponseDiv.innerText = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function GenerateResponse(event) {
+            parentNode = event.target.parentNode;
+            let messageID = parentNode.id;
+            const index = messageID.indexOf('-');
+            const itemID = messageID.substring(index + 1).split('')[0];
+            updateInput = document.getElementById('update-'+itemID).value;
+
+            let updatedResponseDiv = document.getElementById('response-'+itemID)
+
+            let url = '/generate-response/' + itemID;
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // You can handle the response here
+                updatedResponseDiv.innerText = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+    </script>
+</body>
+</html>
