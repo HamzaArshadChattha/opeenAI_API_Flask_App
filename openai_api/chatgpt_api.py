@@ -23,9 +23,10 @@ class ChatGptBotAPI:
             return False
         
     def get_response(self, prompt_index):
+        openai.api_key = self.api_key
         response = openai.ChatCompletion.create(
             model = self.model,
-            messages = self.prompts[prompt_index]['prompt']
+            messages = [{'role': 'user', 'content': self.prompts[prompt_index]['prompt']}]
         )
         ChatGPT_reply = response["choices"][0]["message"]["content"]
         self.prompts[prompt_index]['response'] = ChatGPT_reply
